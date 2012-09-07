@@ -1,7 +1,8 @@
 # ppa.pp
 
 define apt::ppa(
-  $release = $::lsbdistcodename
+  $release = $::lsbdistcodename,
+  $https_proxy = ''
 ) {
   include apt::params
   include apt::update
@@ -21,8 +22,14 @@ define apt::ppa(
     package { 'python-software-properties': }
   }
 
+  if($https_proxy != '') {
+      $command = "env https_proxy='${https_proxy}' /usr/bin/add-apt-repository ${name}"
+  } else {
+      $command = "/usr/bin/add-apt-repository ${name}"
+  }
+
   exec { "add-apt-repository-${name}":
-    command   => "/usr/bin/add-apt-repository ${name}",
+    command   => $command,
     creates   => "${sources_list_d}/${sources_list_d_filename}",
     logoutput => 'on_failure',
     require   => [
