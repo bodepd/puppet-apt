@@ -23,7 +23,7 @@ define apt::ppa(
   }
 
   if($https_proxy != '') {
-      $command = "env https_proxy='${https_proxy}' /usr/bin/add-apt-repository ${name}"
+      $command = "/usr/bin/env https_proxy='${https_proxy}' /usr/bin/add-apt-repository ${name}"
   } else {
       $command = "/usr/bin/add-apt-repository ${name}"
   }
