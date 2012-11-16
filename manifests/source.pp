@@ -12,7 +12,8 @@ define apt::source(
   $key_server        = 'keyserver.ubuntu.com',
   $key_content       = false,
   $key_source        = false,
-  $pin               = false
+  $pin               = false,
+  $proxy             = false,
 ) {
 
   include apt::params
@@ -73,6 +74,7 @@ define apt::source(
       key_content => $key_content,
       key_source  => $key_source,
       before      => File["${name}.list"],
+      proxy       => $proxy,
     }
   }
 
