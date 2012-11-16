@@ -6,4 +6,8 @@ class apt::update {
     logoutput   => 'on_failure',
     refreshonly => true,
   }
+
+  # After updating the package list we may or may not want to update packages that
+  # we've already installed
+  Exec["apt_update"] -> Package <| |>
 }
