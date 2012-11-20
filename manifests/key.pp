@@ -57,7 +57,7 @@ define apt::key (
         exec { $digest:
           command   => $digest_command,
           path      => '/bin:/usr/bin',
-          unless    => "/usr/bin/apt-key list | /bin/grep `/bin/echo ${upkey} | /bin/sed -e 's/.*(........)$/\\1/' `",
+          unless    => "/usr/bin/apt-key list | /bin/grep `/bin/echo ${upkey} | /bin/sed -e 's/.*\(........\)$/\\1/' `",
           logoutput => 'on_failure',
           before    => Anchor["apt::key ${upkey} present"],
         }
