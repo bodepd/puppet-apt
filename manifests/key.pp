@@ -3,7 +3,8 @@ define apt::key (
   $ensure = present,
   $key_content = false,
   $key_source = false,
-  $key_server = 'keyserver.ubuntu.com'
+  $key_server = 'keyserver.ubuntu.com',
+  $proxy = false,
 ) {
 
   include apt::params
@@ -16,7 +17,9 @@ define apt::key (
     $method = 'source'
   } elsif $key_server {
     $method = 'server'
-  }
+  } else {
+    fail("Unknown method")
+   }
 
   # This is a hash of the parts of the key definition that we care about.
   # It is used as a unique identifier for this instance of apt::key. It gets
@@ -39,22 +42,28 @@ define apt::key (
         anchor { "apt::key ${upkey} present": }
       }
 
+       if $proxy {
+          $proxy_pfx="env http_proxy=${proxy} https_proxy=${proxy} "
+      } else {
+          $proxy_pfx=""
+      }
+
       if !defined(Exec[$digest]) {
         $digest_command = $method ? {
           'content' => "echo '${key_content}' | /usr/bin/apt-key add -",
-          'source'  => "wget -q '${key_source}' -O- | apt-key add -",
-          'server'  => "apt-key adv --keyserver '${key_server}' --recv-keys '${upkey}'",
+          'source'  => "${proxy_pfx}wget -q '${key_source}' -O- | apt-key add -",
+          'server'  => "${proxy_pfx}apt-key adv --keyserver '${key_server}' --recv-keys '${upkey}'",
         }
         exec { $digest:
           command   => $digest_command,
           path      => '/bin:/usr/bin',
-          unless    => "/usr/bin/apt-key list | /bin/grep '${upkey}'",
+          unless    => "/usr/bin/apt-key list | /bin/grep `/bin/echo ${upkey} | /bin/sed -e 's/.*\\(........\\)$/\\1/' `",
           logoutput => 'on_failure',
           before    => Anchor["apt::key ${upkey} present"],
         }
       }
 
-      Anchor["apt::key $upkey present"] -> Anchor["apt::key/$title"]
+      Anchor["apt::key ${upkey} present"] -> Anchor["apt::key/${title}"]
 
     }
     absent: {

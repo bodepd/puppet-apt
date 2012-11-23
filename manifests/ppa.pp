@@ -32,8 +32,10 @@ define apt::ppa(
     command   => $command,
     creates   => "${sources_list_d}/${sources_list_d_filename}",
     logoutput => 'on_failure',
-    require   => [ File[$sources_list_d],
-                   Package['python-software-properties'] ],
+    require   => [
+      File[$sources_list_d],
+      Package['python-software-properties'],
+    ],
     notify    => Exec['apt_update'],
   }
 
